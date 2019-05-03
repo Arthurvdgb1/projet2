@@ -1,0 +1,65 @@
+#programme réalisé par le groupe 62
+
+from numpy import *
+
+#FONCTION
+def M(N1,N2,R1,R2,diametrefil,distance,mu=4*10**(-7)):
+    '''une fonction qui prend le nombre de tour des deux bobines, leur rayon central, le diamètre du fil, la distance les séparant et optionnellement une perméabilité magnétique en argument et qui retourne l'inductance mutuelle '''
+    B=0
+    bb=mu/2
+    # calcul du champ magnétique créé par la première bobine en sommant celui de chacune de ses spires (on enlève le I car il va se simplifier à la fin)
+    for i in range(N1):
+        Ray=R1+i*diametrefil
+        b=bb*Ray**2/(Ray**2+distance**2)**(3/2)
+        B+=b
+    Phi_B=0
+    # calcul du flux magnétique perçu par la seconde bobine en sommant celui perçu par chacune de ses spires
+    for i in range(N2):
+        Ray=R2+i*diametrefil
+        Phi_B+=B*pi*Ray**2
+    M=Phi_B#on ne divise pas par I car on a pas multiplier au début
+    return M,B
+
+
+def L(N,R,diametrefil,mu=4*10**(-7)):
+    '''une fonction qui prend le nombre de tour, le rayon central, le diamètre du fil et optionnellement une perméabilité magnétique d'une bobine en argument et qui rentourne son inductance propre'''
+    B=0
+     # calcul du champ magnétique créé par la bobine en sommant celui de chacune de ses spires (on enlève le I car il va se simplifier à la fin)
+    for i in range(N):
+        Ray= R+i*diametrefil
+        B+=mu/2/Ray
+    L=0
+    # calcul du flux magnétique perçu par la bobine en sommant celui perçu par chacune de ses spires
+    for i in range(N):
+        Ray=R+i*diametrefil
+        L+=B*pi*Ray**2
+    return L
+
+
+def composante(L1,L2,M,R1,Rz):
+    omega=sqrt(Rz*Rz*Rz*M*M*R1-L2*L2*R1*R1*Rz*Rz)/(M*M*Rz)
+    C2=(sqrt(R1*Rz-omega**2*M*M))/(Rz*M*omega**2)
+    C1=1/(L1*omega**2)
+    print("C1={} , C2={} et omega={}".format(C1,C2,omega))
+    return C1,C2,omega
+
+
+def A5(Vs,R1,L1,C1,L2,C2,M,Z,w):
+    jw=1j*w
+    a=R1+w*w*M*M/(jw*L2+1/(1/Z+jw*C2))+1/(jw*C1)+jw*L1
+    I1=Vs/a
+    I2=jw*M*I1/(jw*L2+1/(1/Z+jw*C2))
+    V2=I2/(1/Z+jw*C2)
+    return V2,I2,I1
+
+
+#--------------------------------------------------------------------------------------------------------------------------
+#TEST
+L1=49e-6
+L2=42.425e-6
+M=6e-6
+R1=10
+Rz=1000
+C1,C2,w=composante(L1,L2,M,R1,Rz)
+b=A5(4,R1,L1,C1,L2,C2,M,Rz,w)
+print(b)
