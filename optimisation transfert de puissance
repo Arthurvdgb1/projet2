@@ -37,6 +37,7 @@ def L(N,R,diametrefil,mu=4*10**(-7)):
 
 
 def composante(L1,L2,M,R1,Rz):
+    '''une fonction qui prend les trois inductances, la résistance et l'impédance en argument et qui retourne omega et les deux capacité qui maximisent le transfert de puissance'''
     omega=sqrt(Rz*Rz*Rz*M*M*R1-L2*L2*R1*R1*Rz*Rz)/(M*M*Rz)
     C2=(sqrt(R1*Rz-omega**2*M*M))/(Rz*M*omega**2)
     C1=1/(L1*omega**2)
@@ -44,7 +45,8 @@ def composante(L1,L2,M,R1,Rz):
     return C1,C2,omega
 
 
-def A5(Vs,R1,L1,C1,L2,C2,M,Z,w):
+def calculphaseur(Vs,R1,L1,C1,L2,C2,M,Z,w):
+    '''une fonction qui calcul les phaseurs de I1, I2 et V2 en fonction des composantes et de Vs'''
     jw=1j*w
     a=R1+w*w*M*M/(jw*L2+1/(1/Z+jw*C2))+1/(jw*C1)+jw*L1
     I1=Vs/a
@@ -61,5 +63,5 @@ M=6e-6
 R1=10
 Rz=1000
 C1,C2,w=composante(L1,L2,M,R1,Rz)
-b=A5(4,R1,L1,C1,L2,C2,M,Rz,w)
+b=calculphaseur(4,R1,L1,C1,L2,C2,M,Rz,w)
 print(b)
