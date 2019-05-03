@@ -2,6 +2,7 @@
 
 from numpy import *
 
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------
 #FONCTION
 def M(N1,N2,R1,R2,diametrefil,distance,mu=4*10**(-7)):
     '''une fonction qui prend le nombre de tour des deux bobines, leur rayon central, le diamètre du fil, la distance les séparant et optionnellement une perméabilité magnétique en argument et qui retourne l'inductance mutuelle '''
