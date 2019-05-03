@@ -55,6 +55,13 @@ def calculphaseur(Vs,R1,L1,C1,L2,C2,M,Z,w):
     return V2,I2,I1
 
 
+def calculcapa(omega):
+    ''' une fonction qui calcule la capacité nécessaire pour un certain omega donné'''
+    f=omega/(2*pi)
+    C=1/(2*f*10000*log(2))
+    return C
+
+
 #----------------------------------------------------------------------------------------------------------------------------------------------
 #TEST
 L1=49e-6
@@ -65,3 +72,4 @@ Rz=1000
 C1,C2,w=composante(L1,L2,M,R1,Rz)
 b=calculphaseur(4,R1,L1,C1,L2,C2,M,Rz,w)
 print(b)
+print(calculcapa(w))
