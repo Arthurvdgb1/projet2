@@ -1,11 +1,13 @@
 #programme réalisé par le groupe 62
 
 from numpy import *
+import matplotlib.pyplot as plt
 
-#-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #FONCTION
-def M(N1,N2,R1,R2,diametrefil,distance,mu=4*10**(-7)):
-    '''une fonction qui prend le nombre de tour des deux bobines, leur rayon central, le diamètre du fil, la distance les séparant et optionnellement une perméabilité magnétique en argument et qui retourne l'inductance mutuelle '''
+def calcul_M(N1,N2,R1,R2,diametrefil,distance,mu=4*10**(-7)):
+    ''' pré : le nombre de tour des deux bobines, leur rayon central, le diamètre du fil, la distance les séparant et optionnellement la perméabilité magnétique '''
+    ''' post : l'inductance mutuelle de sees deux bobines '''
     B=0
     bb=mu/2
     # calcul du champ magnétique créé par la première bobine en sommant celui de chacune de ses spires (on enlève le I car il va se simplifier à la fin)
@@ -22,8 +24,9 @@ def M(N1,N2,R1,R2,diametrefil,distance,mu=4*10**(-7)):
     return M,B
 
 
-def L(N,R,diametrefil,mu=4*10**(-7)):
-    '''une fonction qui prend le nombre de tour, le rayon central, le diamètre du fil et optionnellement une perméabilité magnétique d'une bobine en argument et qui rentourne son inductance propre'''
+def calcul_L(N,R,diametrefil,mu=4*10**(-7)):
+    ''' pré : le nombre de tour, le rayon central, le diamètre du fil et optionnellement la perméabilité magnétique de la bobine '''
+    ''' post : l'inductance propre de cette bobine '''
     B=0
      # calcul du champ magnétique créé par la bobine en sommant celui de chacune de ses spires (on enlève le I car il va se simplifier à la fin)
     for i in range(N):
@@ -38,7 +41,8 @@ def L(N,R,diametrefil,mu=4*10**(-7)):
 
 
 def composante(L1,L2,M,R1,Rz):
-    '''une fonction qui prend les trois inductances, la résistance et l'impédance en argument et qui retourne omega et les deux capacité qui maximisent le transfert de puissance'''
+    '''  pré : les trois inductances, la résistance et l'impédance (considérée réeelle) '''
+    ''' post : les deux capacités et omega '''
     omega=sqrt(Rz*Rz*Rz*M*M*R1-L2*L2*R1*R1*Rz*Rz)/(M*M*Rz)
     C2=(sqrt(R1*Rz-omega**2*M*M))/(Rz*M*omega**2)
     C1=1/(L1*omega**2)
@@ -47,7 +51,8 @@ def composante(L1,L2,M,R1,Rz):
 
 
 def calculphaseur(Vs,R1,L1,C1,L2,C2,M,Z,w):
-    '''une fonction qui calcul les phaseurs de I1, I2 et V2 en fonction des composantes et de Vs'''
+    ''' pré : Vs et les diverses composants du bloc transfert de puissance '''
+    ''' post : les phaseurs de V2, I2 et I1 '''
     jw=1j*w
     a=R1+w*w*M*M/(jw*L2+1/(1/Z+jw*C2))+1/(jw*C1)+jw*L1
     I1=Vs/a
@@ -56,21 +61,79 @@ def calculphaseur(Vs,R1,L1,C1,L2,C2,M,Z,w):
     return V2,I2,I1
 
 
-def calculcapa(omega):
-    ''' une fonction qui calcule la capacité nécessaire pour un certain omega donné'''
+def calculcapa(omega,R=10000):
+    ''' pré : omega et optionnelement la résistance de feedback allant de la sortie à la borne - '''
+    ''' post : la capacité nécessaire''' 
     f=omega/(2*pi)
-    C=1/(2*f*10000*log(2))
+    C=1/(2*f*R*log(2))
     return C
 
 
-#----------------------------------------------------------------------------------------------------------------------------------------------
-#TEST
-L1=49e-6
-L2=42.425e-6
-M=6e-6
+#--------------------------------------------------------------------------------------------------------------------------
+#Recherche des composantes
+
+L1=47e-6
+L2=49.99875e-6
+M=5e-6
 R1=10
 Rz=1000
 C1,C2,w=composante(L1,L2,M,R1,Rz)
 b=calculphaseur(4,R1,L1,C1,L2,C2,M,Rz,w)
-print(b)
-print(calculcapa(w))
+C=calculcapa(w)
+print("C1={} , C2={} , f={} , C_oscillateur={} pour L1={} , L2={} , M={} , R1={} et Rz={}".format(C1,C2,w/2/pi,C,L1,L2,M,R1,Rz))
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+# V2 en fonction de la distance entre les inductances
+
+N1=53
+N2=54
+ray=0.005
+dia_fil=0.0005
+L2=calcul_L(N2,ray,dia_fil)
+L1=calcul_L(N1,ray,dia_fil)
+x=linspace(0.01,0.06,1000)
+y=zeros(1000)
+for i in range(1000):
+    distance=x[i]
+    M=calcul_M(N1,N2,ray,ray,dia_fil,distance)[0]
+    y[i]=abs(calculphaseur(4,R1,L1,C1,L2,C2,M,Rz,w)[0])
+plt.plot(x,y)
+plt.show()
+L1=47e-6
+L2=49.99875e-6
+M=5e-6
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------
+# V2 en fonction de la fréquence (en faisant varier la résistance de feedback dans le bloc oscillateur)
+
+x=linspace(1000,20000,1000)
+y=zeros(1000)
+for i in range(1000):
+    R=x[i]
+    f=1/(2*C*R*log(2))
+    wi=2*pi*f
+    y[i]=abs(calculphaseur(4,R1,L1,C1,L2,C2,M,Rz,wi)[0])
+plt.plot(x,y)
+plt.show()
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------------
+# V2 en fonction de C1
+
+x=linspace(1e-8,1e-4,10000)
+y=zeros(10000)
+for i in range(10000):
+    C1i=x[i]
+    y[i]=abs(calculphaseur(4,R1,L1,C1i,L2,C2,M,Rz,w)[0])
+plt.plot(log10(x),y)
+plt.show()
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+# V2 en fonction de C2
+
+x=linspace(1e-8,1e-4,10000)
+y=zeros(10000)
+for i in range(10000):
+    C2i=x[i]
+    y[i]=abs(calculphaseur(4,R1,L1,C1,L2,C2i,M,Rz,w)[0])
+plt.plot(log10(x),y)
+plt.show()
