@@ -83,7 +83,7 @@ C=calculcapa(w)
 print("C1={} , C2={} , f={} , C_oscillateur={} pour L1={} , L2={} , M={} , R1={} et Rz={}".format(C1,C2,w/2/pi,C,L1,L2,M,R1,Rz))
 
 #--------------------------------------------------------------------------------------------------------------------------------------
-# V2 en fonction de la distance entre les inductances
+# V2 en fonction de la distance entre les bobines
 
 N1=53
 N2=54
@@ -91,13 +91,17 @@ ray=0.005
 dia_fil=0.0005
 L2=calcul_L(N2,ray,dia_fil)
 L1=calcul_L(N1,ray,dia_fil)
-x=linspace(0.01,0.06,1000)
+x=linspace(0.015,0.05,1000)
 y=zeros(1000)
 for i in range(1000):
     distance=x[i]
     M=calcul_M(N1,N2,ray,ray,dia_fil,distance)[0]
     y[i]=abs(calculphaseur(4,R1,L1,C1,L2,C2,M,Rz,w)[0])
-plt.plot(x,y)
+plt.plot(x*100,y/5)
+plt.plot([1.5,2,2.5,3,4,5],[3.2,2.425,1.705,1.06,0.592,0.212],'.r')
+plt.title('V2 en fonction de la distance entre les bobines')
+plt.ylabel('V')
+plt.xlabel('cm')
 plt.show()
 L1=47e-6
 L2=49.99875e-6
@@ -106,16 +110,21 @@ M=5e-6
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 # V2 en fonction de la fréquence (en faisant varier la résistance de feedback dans le bloc oscillateur)
 
-x=linspace(1000,20000,1000)
+x=linspace(6000,13000,1000)
 y=zeros(1000)
 for i in range(1000):
     R=x[i]
     f=1/(2*C*R*log(2))
     wi=2*pi*f
     y[i]=abs(calculphaseur(4,R1,L1,C1,L2,C2,M,Rz,wi)[0])
-plt.plot(x,y)
+plt.plot(x,y/5)
+plt.plot([6600,8800,10000,11000,12200],[0.3568,1.776,3.213,1.588,0.722],'.r')
+plt.title('V2 en fonction de la résistance qui détermine la fréquence')
+plt.ylabel('V')
+plt.xlabel('Ohm')
 plt.show()
-
+f=1/(2*3.33e-9*10000*log(2))
+print(f)
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
 # V2 en fonction de C1
 
@@ -124,16 +133,25 @@ y=zeros(10000)
 for i in range(10000):
     C1i=x[i]
     y[i]=abs(calculphaseur(4,R1,L1,C1i,L2,C2,M,Rz,w)[0])
-plt.plot(log10(x),y)
+plt.plot(log10(x),y/5)
+a=array([0.1,0.2,0.3,0.5,1,2,3,4,5])*1e-6
+plt.plot(log10(a),[0.8,1.54,1.96,2.95,3.4,3.35,3.2,3.04,2.94],'.r')
+plt.title('V2 en fonction de C1')
+plt.ylabel('V')
+plt.xlabel('log(C) F')
 plt.show()
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------
 # V2 en fonction de C2
 
-x=linspace(1e-8,1e-4,10000)
+x=linspace(1e-7,1e-5,10000)
 y=zeros(10000)
 for i in range(10000):
     C2i=x[i]
     y[i]=abs(calculphaseur(4,R1,L1,C1,L2,C2i,M,Rz,w)[0])
-plt.plot(log10(x),y)
+plt.plot(log10(x),y/5)
+plt.plot(log10(array([0.33,0.5,1,1.5,2])*1e-6),[0.42,0.5,3.4,0.73,0.24],'r.')
+plt.title('V2 en fonction de C2')
+plt.ylabel('V')
+plt.xlabel('log(C) F')
 plt.show()
